@@ -1,12 +1,12 @@
-/*
- * First Created by LibergCoder@1.2.0
- */
 package cn.liberg.demo.data.dao;
 
+import cn.liberg.core.Column;
+import cn.liberg.core.LongColumn;
 import cn.liberg.core.OperatorException;
-import cn.liberg.core.StatusCode;
+import cn.liberg.core.StringColumn;
 import cn.liberg.database.BaseDao;
-import cn.liberg.database.query.*;
+import cn.liberg.database.select.PreparedSelectExecutor;
+import cn.liberg.database.select.PreparedSelectWhere;
 import cn.liberg.demo.data.entity.User;
 
 import java.sql.PreparedStatement;
@@ -15,44 +15,56 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * user表的数据访问对象
+ */
 public class UserDao extends BaseDao<User> {
     private static volatile UserDao selfInstance;
-    public static final StringColumn columnName = new StringColumn("_name");
-    public static final StringColumn columnPassword = new StringColumn("_password");
-    public static final LongColumn columnRoleId = new LongColumn("_role_id");
-    public static final LongColumn columnCreateTime = new LongColumn("_create_time");
-
-    public static PreparedQueryBuilder getByName;
+    public static final Column<String> columnName = new StringColumn("name", "n");
+    public static final Column<String> columnPassword = new StringColumn("password", "p");
+    public static final Column<Long> columnRoleId = new LongColumn("roleId", "ri");
+    public static final Column<Long> columnCreateTime = new LongColumn("createTime", "ct");
 
     private UserDao() {
         super("user");
-        getByName = buildQuery().eq(columnName);
         init();
     }
 
-    //推荐写法：使用PreparedStatement，稍麻烦，但性能好。
     public User getByName(String name) throws OperatorException {
-        try(PreparedQuery prepared = prepare(getByName)) {
-            prepared.set(columnName, name);
+        final PreparedSelectWhere<User> psw = prepareSelect().whereEq$(columnName);
+        try (final PreparedSelectExecutor<User> prepared = psw.prepare()) {
+            prepared.setParameter(columnName, name);
             User user = prepared.one();
-            if(user != null) {
+            if (user != null) {
                 user.role = RoleDao.self().getById(user.roleId);
             }
             return user;
-        } catch (Exception e) {
-            throw new OperatorException(StatusCode.ERROR_DB, e);
         }
     }
 
-    //另一种写法，写起来方便些，但性能相对差
+    /**
+     * 另一种写法
+     */
     public User getByName2(String name) throws OperatorException {
-        User user = Query.of(this).eq(columnName, name).one();
-        if(user != null) {
+        final User user = select()
+                .whereEq(columnName, name)
+                .one();
+        if (user != null) {
             user.role = RoleDao.self().getById(user.roleId);
         }
         return user;
     }
 
+    /**
+     * 单个条件查询，可以直接调用geXxx系列方法
+     */
+    public User getByName3(String name) throws OperatorException {
+        final User user = getEq(columnName, name);
+        if (user != null) {
+            user.role = RoleDao.self().getById(user.roleId);
+        }
+        return user;
+    }
 
     private void init() {
     }
@@ -88,7 +100,7 @@ public class UserDao extends BaseDao<User> {
 
     @Override
     public List<Column> getColumns() {
-        if(columns == null) {
+        if (columns == null) {
             columns = new ArrayList<>(8);
             columns.add(columnName);
             columns.add(columnPassword);
@@ -99,14 +111,14 @@ public class UserDao extends BaseDao<User> {
     }
 
     public static UserDao self() {
-		if (selfInstance == null) {
-		    synchronized (UserDao.class) {
+        if (selfInstance == null) {
+            synchronized (UserDao.class) {
                 if (selfInstance == null) {
                     selfInstance = new UserDao();
                 }
             }
-		}
-		return selfInstance;
+        }
+        return selfInstance;
     }
 
 }

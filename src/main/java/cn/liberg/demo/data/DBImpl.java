@@ -3,15 +3,19 @@ package cn.liberg.demo.data;
 import cn.liberg.database.IDataBase;
 import cn.liberg.database.IDataBaseConf;
 import cn.liberg.database.TableBuilder;
+import cn.liberg.demo.data.dao.CompanyDao;
+import cn.liberg.demo.data.dao.RoleDao;
+import cn.liberg.demo.data.dao.UserDao;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBImpl implements IDataBase {
     private Log logger = LogFactory.getLog(getClass());
     protected final IDataBaseConf dbConf;
-    protected final int dbVersion = 2;
+    protected final int dbVersion = 1;
     protected final String dbName;
 
     public DBImpl(IDataBaseConf dbConf) {
@@ -52,31 +56,31 @@ public class DBImpl implements IDataBase {
 
     @Override
     public void createTable(Statement stat) throws SQLException {
-        createTableRole(stat);
         createTableUser(stat);
+        createTableRole(stat);
         createTableCompany(stat);
     }
 
-    protected void createTableRole(Statement stat) throws SQLException {
-        TableBuilder tb = new TableBuilder("role");
-        tb.add("_name", typeString(31), null);
-        tb.add("_permissions", typeText(), null);
+    protected void createTableUser(Statement stat) throws SQLException {
+        TableBuilder tb = new TableBuilder(UserDao.self().getTableName());
+        tb.add(UserDao.columnName, true, typeString());
+        tb.add(UserDao.columnPassword, typeString());
+        tb.add(UserDao.columnRoleId, typeLong());
+        tb.add(UserDao.columnCreateTime, typeLong());
         stat.executeUpdate(tb.build());
     }
 
-    protected void createTableUser(Statement stat) throws SQLException {
-        TableBuilder tb = new TableBuilder("user");
-        tb.add("_name", true, typeString(), null);
-        tb.add("_password", typeString(), null);
-        tb.add("_role_id", typeLong(), null);
-        tb.add("_create_time", typeLong(), null);
+    protected void createTableRole(Statement stat) throws SQLException {
+        TableBuilder tb = new TableBuilder(RoleDao.self().getTableName());
+        tb.add(RoleDao.columnName, typeString(31));
+        tb.add(RoleDao.columnPermissions, typeText());
         stat.executeUpdate(tb.build());
     }
 
     protected void createTableCompany(Statement stat) throws SQLException {
-        TableBuilder tb = new TableBuilder("company");
-        tb.add("_name", typeString(), null);
-        tb.add("_create_time", typeLong(), null);
+        TableBuilder tb = new TableBuilder(CompanyDao.self().getTableName());
+        tb.add(CompanyDao.columnName, typeString());
+        tb.add(CompanyDao.columnCreateTime, typeLong());
         stat.executeUpdate(tb.build());
     }
 

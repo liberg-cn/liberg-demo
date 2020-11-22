@@ -3,10 +3,11 @@
  */
 package cn.liberg.demo.data.dao;
 
-import cn.liberg.demo.data.entity.Role;
+import cn.liberg.core.Column;
+import cn.liberg.core.StringColumn;
 import cn.liberg.database.BaseDao;
-import cn.liberg.database.query.*;
 import cn.liberg.demo.data.entity.Role;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,8 +16,8 @@ import java.util.List;
 
 public class RoleDao extends BaseDao<Role> {
     private static volatile RoleDao selfInstance;
-    public static final StringColumn columnName = new StringColumn("_name");
-    public static final StringColumn columnPermissions = new StringColumn("_permissions");
+    public static final Column<String> columnName = new StringColumn("name", "n");
+    public static final Column<String> columnPermissions = new StringColumn("permissions", "p");
 
     private RoleDao() {
         super("role");

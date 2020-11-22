@@ -11,5 +11,4 @@ public class Role {
     @JSONField(name="p") @dbmap(length=5000) 
     public String permissions;
 
-
 }

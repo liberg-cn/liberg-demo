@@ -3,10 +3,12 @@
  */
 package cn.liberg.demo.data.dao;
 
-import cn.liberg.demo.data.entity.Company;
+import cn.liberg.core.Column;
+import cn.liberg.core.LongColumn;
+import cn.liberg.core.StringColumn;
 import cn.liberg.database.BaseDao;
-import cn.liberg.database.query.*;
 import cn.liberg.demo.data.entity.Company;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,8 +17,8 @@ import java.util.List;
 
 public class CompanyDao extends BaseDao<Company> {
     private static volatile CompanyDao selfInstance;
-    public static final StringColumn columnName = new StringColumn("_name");
-    public static final LongColumn columnCreateTime = new LongColumn("_create_time");
+    public static final Column<String> columnName = new StringColumn("name", "n");
+    public static final Column<Long> columnCreateTime = new LongColumn("createTime", "ct");
 
     private CompanyDao() {
         super("company");
